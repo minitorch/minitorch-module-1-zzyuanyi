@@ -22,8 +22,17 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
+    val_temp=list(vals)
+    ans_list=[]
+    for i in range(arg):
+        val_plus=list(val_temp)
+        val_minus=list(val_temp)
+        val_plus[i]+=epsilon/2
+        val_minus[i]-=epsilon/2
+        ans_list.append((f(val_plus)-f(val_minus))/epsilon)
+    return ans_list
     # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    #raise NotImplementedError("Need to implement for Task 1.1")
 
 
 variable_count = 1
@@ -62,7 +71,29 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
         Non-constant Variables in topological order starting from the right.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    PermanentMarked=[]
+    TemporaryMarked=[]
+    result=[]
+    def visit(x):
+        if x.is_constant():
+            return
+        if x.unique_id in PermanentMarked:
+            return 
+        elif x.unique_id in TemporaryMarked:
+            raise(RuntimeErroe("not dag"))
+        TemporaryMarked.append(n.unique_id)
+        if x.is_leaf():
+            pass
+        else:
+            for input in x.history.inputs:
+                visit (input)
+        TemporaryMarked.remove(x.unique_id)
+        PermanentMarked.remove(x.unique_id)
+        result.insert(0,x)
+        
+    visit(variable)
+    return result
+    #raise NotImplementedError("Need to implement for Task 1.4")
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -77,6 +108,19 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
     # TODO: Implement for Task 1.4.
+    order=topological_sort(variable)
+    derivs={variable.unique_id:deriv}
+    for node in order:
+        d_output=derivs[node.unique_id]
+        if node.is_leaf():
+            node.accumulate_derivative(d_output)
+        else:
+            for input,d in node.history.backprop_step(d_output):
+                if input.unique_id not in derivs:
+                    derivs[input.unique_id]=0.0
+                derivs[input.unique_id]+=d
+    return
+
     raise NotImplementedError("Need to implement for Task 1.4")
 
 
